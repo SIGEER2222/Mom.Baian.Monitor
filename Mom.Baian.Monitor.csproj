@@ -9,6 +9,7 @@
   
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="6.*" />
+    <PackageReference Include="AntDesign.Charts" Version="0.5.1" />
   </ItemGroup>
   
 </Project>

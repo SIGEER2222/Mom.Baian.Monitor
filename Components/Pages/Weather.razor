@@ -1,0 +1,89 @@
+﻿@page "/weather"
+
+@using AntDesign.Charts
+@using Title = AntDesign.Charts.Title
+@inject NavigationManager NavigationManager
+<MudDateRangePicker Label="起止时间" StartMonth="@DateTime.Now.AddMonths(-1)" @bind-DateRange="DateRange" MaxDate="DateTime.Today" />
+<AntDesign.Charts.Line @ref="chart1" Data="data2" Config="config1" />
+
+@code {
+    IChartComponent chart1;
+    private DateRange _dateRange = new DateRange(DateTime.Now.AddDays(-6).Date, DateTime.Now.Date);
+    public DateRange DateRange
+    {
+        get => _dateRange;
+        set
+        {
+            _dateRange = value;
+            data2 = GenerateDatas(value.Start ?? DateTime.Now, value.End ?? DateTime.Now);
+            chart1.ChangeData(data2);
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    List<object> data2 { get; set; }
+    LineConfig config1 = new LineConfig
+        {
+            Padding = "auto",
+            XField = "date",
+            YField = "value",
+            YAxis = new ValueAxis
+            {
+                Label = new BaseAxisLabel()
+            },
+            Legend = new Legend
+            {
+                Position = "right-top"
+            },
+            Smooth = true,
+            SeriesField = "type"
+        };
+
+    protected override void OnInitialized()
+    {
+        data2 = GenerateDatas(DateTime.Now.AddDays(-6).Date, DateTime.Now.Date);
+        base.OnInitialized();
+    }
+
+    private List<object> GenerateDatas(DateTime start, DateTime end)
+    {
+        var lst = GenerateData(start, end, "电表A");
+        lst.AddRange(GenerateData(start, end, "电表B"));
+        lst.AddRange(GenerateData(start, end, "电表C"));
+        return lst;
+    }
+
+    private List<object> GenerateData(DateTime start, DateTime end, string type)
+    {
+        Random random = new Random();
+        var data = new List<object>();
+        double value = 0;
+
+        if ((end - start).TotalDays <= 3)
+        {
+            for (var dt = start; dt <= end; dt = dt.AddHours(2))
+            {
+                value += random.NextDouble(); 
+                data.Add(new { date = dt.ToString("yyyy/MM/dd HH"), value = value, type = type });
+            }
+        }
+
+        else if ((end - start).TotalDays <= 14)
+        {
+            for (var dt = start; dt <= end; dt = dt.AddHours(12))
+            {
+                value += random.NextDouble();
+                data.Add(new { date = dt.ToString("yyyy/MM/dd HH"), value = value, type = type });
+            }
+        }
+        else if ((end - start).TotalDays <= 60)
+        {
+            for (var dt = start; dt <= end; dt = dt.AddDays(1))
+            {
+                value += random.NextDouble();
+                data.Add(new { date = dt.ToString("yyyy/MM/dd"), value = value, type = type });
+            }
+        }
+
+        return data;
+    }
+}

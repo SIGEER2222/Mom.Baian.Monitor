@@ -1,0 +1,100 @@
+﻿@page "/ammeter"
+@using System.Threading.Tasks
+@using System.Timers
+@using System.Collections.Generic
+@using Mom.Scan.Razor.Components.Components
+
+<MudTable Items="@AmmeterModels" Class="text-center" HorizontalScrollbar="true">
+    <HeaderContent>
+        <MudTh>电箱</MudTh>
+        <MudTh>实用电量</MudTh>
+        <MudTh>总功率</MudTh>
+        <MudTh>A相功率</MudTh>
+        <MudTh>B相功率</MudTh>
+        <MudTh>C相功率</MudTh>
+        <MudTh>A相电流</MudTh>
+        <MudTh>B相电流</MudTh>
+        <MudTh>C相电流</MudTh>
+        <MudTh>A相电压</MudTh>
+        <MudTh>B相电压</MudTh>
+        <MudTh>C相电压</MudTh>
+        <MudTh>PT</MudTh>
+        <MudTh>CT</MudTh>
+        <MudTh>03F</MudTh>
+        <MudTh>40H</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        @{
+            var item = context;
+        }
+        <MudTd>@item.Name <p></p> @item.ID</MudTd>
+        <MudTd>@item.AmmeterTable.PW.ToString("0000.00")&nbsp;KWH</MudTd>
+        <MudTd>@item.AmmeterTable.PowerTotal.ToString("0000.00")&nbsp;KW</MudTd>
+        <MudTd>@item.AmmeterTable.PowerA.ToString("0000.00")&nbsp;KW</MudTd>
+        <MudTd>@item.AmmeterTable.PowerB.ToString("0000.00")&nbsp;KW</MudTd>
+        <MudTd>@item.AmmeterTable.PowerC.ToString("0000.00")&nbsp;KW</MudTd>
+        <MudTd>@item.AmmeterTable.AA.ToString("0000.00")&nbsp;A</MudTd>
+        <MudTd>@item.AmmeterTable.AB.ToString("0000.00")&nbsp;A</MudTd>
+        <MudTd>@item.AmmeterTable.AC.ToString("0000.00")&nbsp;A</MudTd>
+        <MudTd>@item.AmmeterTable.VA.ToString("0000.00")&nbsp;V</MudTd>
+        <MudTd>@item.AmmeterTable.VB.ToString("0000.00")&nbsp;V</MudTd>
+        <MudTd>@item.AmmeterTable.VC.ToString("0000.00")&nbsp;V</MudTd>
+        <MudTd>@item.AmmeterTable.PT.ToString("0000.00")</MudTd>
+        <MudTd>@item.AmmeterTable.CT.ToString("0000.00")</MudTd>
+        <MudTd>@item.AmmeterTable._03F.ToString("0000.00")</MudTd>
+        <MudTd>@item.AmmeterTable._40H.ToString("0000.00")</MudTd>
+    </RowTemplate>
+</MudTable>
+
+    @code {
+    [Parameter]
+    public List<AmmeterModel> AmmeterModels { get; set; } = new List<AmmeterModel>();
+
+    private Timer timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        timer = new Timer(500);
+        timer.Elapsed += Timer_Elapsed;
+        timer.AutoReset = true;
+        timer.Start();
+    }
+
+    private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+    {
+        // 生成随机数据
+        var random = new Random();
+        var lst = new List<AmmeterModel>();
+        for (int i = 1; i < 17; i++)
+        {
+            var newData = new AmmeterModel
+                {
+                    IP = "192.168.1." + random.Next(1, 255),
+                    Port = random.Next(10000, 60000).ToString(),
+                    Name = "电箱" + i,
+                    ID = "01-GPB-N3-0" + i,
+                    AmmeterTable = new AmmeterTable
+                    {
+                        PT = random.NextDouble() * 100,
+                        CT = random.NextDouble() * 10,
+                        _03F = random.NextDouble() * 100,
+                        _40H = random.NextDouble() * 100,
+                        AA = random.NextDouble() * 100,
+                        AB = random.NextDouble() * 100,
+                        AC = random.NextDouble() * 100,
+                        VA = random.NextDouble() * 100,
+                        VB = random.NextDouble() * 100,
+                        VC = random.NextDouble() * 100
+                    }
+                };
+            lst.Add(newData);
+        }
+        AmmeterModels = lst;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        timer.Dispose();
+    }
+}
